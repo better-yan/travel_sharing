@@ -5,7 +5,7 @@ body,
   height: 100%;
   margin: 0;
   padding: 0;
-  min-width: 600px;
+  min-width: 1050px;
   font-family: Arial, "Lucida Grande", "Microsoft Yahei", "Hiragino Sans GB", "Hiragino Sans GB W3", SimSun, "PingFang SC", STHeiti;
 }
 
@@ -17,9 +17,24 @@ a {
   color: black;
   text-decoration: none;
 }
-.el-card {
-  border: none !important;
+
+.el-main {
+  min-width: 680px;
 }
+
+.el-aside {
+  /* min-width: 300px; */
+}
+
+.el_menu {
+  min-width: 1100px;
+}
+.el-footer{
+  min-width: 1100px;
+}
+/* .el-card {
+  border: none !important;
+} */
 /* .el-breadcrumb {
     margin-bottom: 15px;
     font-size: 12px;

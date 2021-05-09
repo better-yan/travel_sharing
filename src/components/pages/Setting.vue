@@ -34,14 +34,6 @@
                 <i class="el-icon-attract"></i>
                 <span slot="title">账号安全</span>
               </el-menu-item>
-              <el-menu-item index="5">
-                <i class="el-icon-star-off"></i>
-                <span slot="title">关注</span>
-              </el-menu-item>
-              <el-menu-item index="6">
-                <i class="el-icon-s-custom"></i>
-                <span slot="title">粉丝</span>
-              </el-menu-item>
             </el-menu>
           </el-row></el-aside
         >
@@ -62,6 +54,9 @@
             >
               <el-form-item prop="username" label="用户名：">
                 <el-input v-model="baseForm.username"></el-input>
+              </el-form-item>
+              <el-form-item prop="email" label="邮箱">
+                <el-input v-model="baseForm.email"></el-input>
               </el-form-item>
               <el-form-item label="性别：">
                 <el-radio-group v-model="baseForm.sex">
@@ -108,7 +103,7 @@
               >
                 <img v-if="imageUrl" :src="imageUrl" class="avatar" />
                 <i v-else class="el-icon-plus avatar-uploader-icon"></i>
-                <el-button size="small" type="warning">点击上传</el-button>
+                <el-button style="margin-top:15px" size="small" type="warning">点击上传</el-button>
               </el-upload>
             </div>
           </el-card>
@@ -155,121 +150,6 @@
             </div>
             <div></div>
           </el-card>
-          <el-card
-            shadow="never"
-            class="box-card"
-            v-else-if="currentShowIndex === '5'"
-          >
-            <div slot="header" class="clearfix">
-              <el-row>
-                <el-col :span="14"><span>关注</span></el-col>
-                <el-col :span="10">
-                  <el-input
-                    style="float: right; padding: 3px 0"
-                    placeholder="请输入内容"
-                    clearable
-                    @clear="getFollowList"
-                    v-model="queryInfo.query"
-                  >
-                    <el-button
-                      slot="append"
-                      icon="el-icon-search"
-                      @click="getFollowList"
-                    ></el-button> </el-input
-                ></el-col>
-              </el-row>
-              <el-row style="margin-top: 20px">
-                <div>
-                  <div v-for="(item, index) in allFollowList" :key="index">
-                    <el-card class="mw_setting_card">
-                      <div class="Follow_info">
-                        <div>
-                          <el-avatar
-                            class="author_avatar"
-                            :size="120"
-                            :src="item.avatar"
-                          ></el-avatar>
-                        </div>
-                        <div class="mw_div_userInfo">
-                          {{ item.username }}
-                          <i
-                            class="el-icon-female mw_i_female_icon"
-                            v-if="item.sex === '女'"
-                          ></i>
-                          <i
-                            class="el-icon-male mw_i_male_icon"
-                            v-else-if="item.sex === '男'"
-                          ></i>
-                          <i class="el-icon-lock" v-else></i>
-                        </div>
-                        <div class="mw_person_active">
-                          <el-row>
-                            <el-col :span="8" style="border: 1px solid #e2e2e2">
-                              <el-row>{{ item.travelNotes }}</el-row>
-                              <el-row>游记</el-row>
-                            </el-col>
-                            <el-col :span="8" style="border: 1px solid #e2e2e2">
-                              <el-row>{{ item.fansNum }}</el-row>
-                              <el-row>粉丝</el-row></el-col
-                            >
-                            <el-col :span="8" style="border: 1px solid #e2e2e2">
-                              <el-row>{{ item.footprint }}</el-row>
-                              <el-row>足迹</el-row></el-col
-                            >
-                          </el-row>
-                        </div>
-                        <div class="mw_div_option">
-                          <el-button type="warning">关注</el-button>
-                          <el-button type="warning" plain>私信</el-button>
-                        </div>
-                      </div>
-                    </el-card>
-                  </div>
-                </div>
-              </el-row>
-              <el-row>
-                <div class="block">
-                  <el-pagination
-                    @size-change="handleSizeChange"
-                    @current-change="handleCurrentChange"
-                    :current-page.sync="currentPage1"
-                    :page-size="100"
-                    layout="total, prev, pager, next"
-                    :total="1000"
-                  >
-                  </el-pagination>
-                </div>
-              </el-row>
-            </div>
-            <div></div>
-          </el-card>
-          <el-card
-            shadow="never"
-            class="box-card"
-            v-else-if="currentShowIndex === '6'"
-          >
-            <div slot="header" class="clearfix">
-              <el-row>
-                <el-col :span="14"><span>粉丝</span></el-col>
-                <el-col :span="10">
-                  <el-input
-                    style="float: right; padding: 3px 0"
-                    placeholder="请输入内容"
-                    clearable
-                    @clear="getFollowList"
-                    v-model="queryInfo.query"
-                  >
-                    <el-button
-                      slot="append"
-                      icon="el-icon-search"
-                      @click="getFollowList"
-                    ></el-button> </el-input
-                ></el-col>
-              </el-row>
-              <el-row> </el-row>
-            </div>
-            <div></div>
-          </el-card>
         </el-main>
       </el-container>
       <mw_footer>
@@ -306,6 +186,7 @@ export default {
       baseForm: {
         username: "",
         sex: "",
+        email: "",
         city: "",
         date: "",
         desc: "",
@@ -422,13 +303,13 @@ export default {
       var sendForm = {
         username: this.baseForm.username,
         sex: this.baseForm.sex,
+        email: this.baseForm.email,
         city: this.baseForm.city,
         date: date,
         desc: this.baseForm.desc,
         userId: userId,
       };
       this.$refs.baseFormRef.validate(async (valid) => {
-        console.log(this.sendForm);
         if (!valid) {
           return;
         }

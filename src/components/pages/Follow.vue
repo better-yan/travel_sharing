@@ -10,6 +10,7 @@
         <el-aside width="220px">
           <el-row class="tac">
             <el-menu
+              @select="handleSelect"
               :default-active="currentShowIndex"
               class="el-menu-vertical-demo"
               text-color="#666"
@@ -52,7 +53,7 @@
               </el-row>
               <el-row style="margin-top: 20px">
                 <div>
-                  <div v-for="(item, index) in currentFollowList" :key="index">
+                  <div v-for="(item, index) in currentFocusList" :key="index">
                     <el-card class="mw_setting_card">
                       <div class="Follow_info">
                         <div>
@@ -91,7 +92,9 @@
                           </el-row>
                         </div>
                         <div class="mw_div_option">
-                          <el-button type="warning">{{ item.foucsText }}</el-button>
+                          <el-button type="warning">{{
+                            item.foucsText
+                          }}</el-button>
                           <el-button type="warning" plain>私信</el-button>
                         </div>
                       </div>
@@ -138,7 +141,70 @@
                     ></el-button> </el-input
                 ></el-col>
               </el-row>
-              <el-row> </el-row>
+              <el-row style="margin-top: 20px">
+                <div>
+                  <div v-for="(item, index) in currentFansList" :key="index">
+                    <el-card class="mw_setting_card">
+                      <div class="Follow_info">
+                        <div>
+                          <el-avatar
+                            class="author_avatar"
+                            :size="120"
+                            :src="item.avatar"
+                          ></el-avatar>
+                        </div>
+                        <div class="mw_div_userInfo">
+                          {{ item.username }}
+                          <i
+                            class="el-icon-female mw_i_female_icon"
+                            v-if="item.sex === '女'"
+                          ></i>
+                          <i
+                            class="el-icon-male mw_i_male_icon"
+                            v-else-if="item.sex === '男'"
+                          ></i>
+                          <i class="el-icon-lock" v-else></i>
+                        </div>
+                        <div class="mw_person_active">
+                          <el-row>
+                            <el-col :span="8" style="border: 1px solid #e2e2e2">
+                              <el-row>{{ item.articleNotesNum }}</el-row>
+                              <el-row>游记</el-row>
+                            </el-col>
+                            <el-col :span="8" style="border: 1px solid #e2e2e2">
+                              <el-row>{{ item.fansNum }}</el-row>
+                              <el-row>粉丝</el-row></el-col
+                            >
+                            <el-col :span="8" style="border: 1px solid #e2e2e2">
+                              <el-row>{{ item.footprint }}</el-row>
+                              <el-row>足迹</el-row></el-col
+                            >
+                          </el-row>
+                        </div>
+                        <div class="mw_div_option">
+                          <el-button type="warning">{{
+                            item.foucsText
+                          }}</el-button>
+                          <el-button type="warning" plain>私信</el-button>
+                        </div>
+                      </div>
+                    </el-card>
+                  </div>
+                </div>
+              </el-row>
+              <el-row>
+                <!-- <div class="block">
+                  <el-pagination
+                    @size-change="handleSizeChange"
+                    @current-change="handleCurrentChange"
+                    :current-page.sync="currentPage1"
+                    :page-size="100"
+                    layout="total, prev, pager, next"
+                    :total="1000"
+                  >
+                  </el-pagination>
+                </div> -->
+              </el-row>
             </div>
             <div></div>
           </el-card>
@@ -164,9 +230,10 @@ export default {
     return {
       currentShowIndex: "1",
       // 关注
-      allFollowList: [],
-      allFocusInfoList: [],
-      currentFollowList: [],
+      allFansList: [],
+      allFocusList: [],
+      currentFocusList: [],
+      currentFansList: [],
       // 查询符合条件的关注（分页）
       queryInfo: {
         query: "",
@@ -178,45 +245,49 @@ export default {
     };
   },
   created() {
+    this.getCurrentShowInfo();
     this.getFollowInfo();
+    this.getFansInfo();
   },
   methods: {
-    // 获取关注的信息
-    async getFollowInfo() {
-      var userResult = this.publicMethod.getUrluserAndUser();
-      const res = await this.$http.get("/api/getFocusDetailInfo", {
-        params: {
-          userId: userResult[0],
-        },
-      });
-      console.log(res);
-      var avatar;
-      const {
-        foucusInfo,
-        foucusArticleInfo,
-        foucus_fansInfo,
-      } = res.data.result;
-      // 计算游记数
-      var userObj_articleNum = foucusArticleInfo.reduce(function (
-        userObj,
-        currentItem
-      ) {
+    handleSelect(key, keyPath) {
+      if (key === "1") {
+        this.currentShowIndex = "1";
+      } else if (key === "2") {
+        this.currentShowIndex = "2";
+      }
+    },
+    // 当前显示界面
+    getCurrentShowInfo() {
+      var urlParams = this.publicMethod.getUrlParamsObj();
+      console.log(urlParams);
+      if (urlParams["currentShowIndex"] === "2") {
+        this.currentShowIndex = "2";
+      }
+    },
+    // 计算游记数
+    getUserObj_articleNum(ArticleInfo) {
+      if (ArticleInfo.length === 0) {
+        return {};
+      }
+      return ArticleInfo.reduce(function (userObj, currentItem) {
         userObj[currentItem.userId] = userObj[currentItem.userId] + 1 || 1;
         return userObj;
-      },
-      {});
-      // 计算粉丝数
-      var userObj_fansNum = foucus_fansInfo.reduce(function (
-        userObj,
-        currentItem
-      ) {
+      }, {});
+    },
+    // 计算粉丝数
+    getUserObj_fansNum(fansInfo) {
+      if (fansInfo.length === 0) {
+        return {};
+      }
+      return fansInfo.reduce(function (userObj, currentItem) {
         userObj[currentItem.userId] = userObj[currentItem.userId] + 1 || 1;
         return userObj;
-      },
-      {});
-
-      // 获取当前登录用户的关注id
-      // 关注按钮显示文本
+      }, {});
+    },
+    // 获取当前登录用户的关注id
+    // 关注按钮显示文本
+    async getCurrentLoginUser_focusId(userResult) {
       const { data: loginUser_res } = await this.$http.get(
         "/api/getFocusInfo",
         {
@@ -230,32 +301,132 @@ export default {
       for (var i = 0; i < loginUserInfo.length; i++) {
         loginUser[loginUserInfo[i].userId] = true;
       }
+      return loginUser;
+    },
+    // 获取关注的信息
+    async getFollowInfo() {
+      var userResult = this.publicMethod.getUrluserAndUser();
+      const res = await this.$http.get("/api/getFocusDetailInfo", {
+        params: {
+          userId: userResult[0],
+        },
+      });
+      console.log(res);
+      if (res.status !== 200) {
+        return this.$message.error("查询失败");
+      } else {
+        if (!res.data.state) {
+          console.log(this.personal);
+        }
+      }
+      var avatar;
+      const {
+        followInfo,
+        followArticleInfo,
+        follow_fansInfo,
+      } = res.data.result;
+      // 计算游记数
+      var userObj_articleNum = this.getUserObj_articleNum(followArticleInfo);
+      // 计算粉丝数
+      var userObj_fansNum = this.getUserObj_fansNum(follow_fansInfo);
+
+      // 获取当前登录用户的关注id
+      // 关注按钮显示文本
+      var loginUser = this.getCurrentLoginUser_focusId(userResult);
 
       // 格式化显示内容
-      for (var i = 0; i < foucusInfo.length; i++) {
-        avatar = foucusInfo[i].avatar.split("\\")[2];
-        this.allFollowList[i] = {
+      for (var i = 0; i < followInfo.length; i++) {
+        avatar = followInfo[i].avatar.split("\\")[2];
+        this.allFocusList[i] = {
           avatar: require("../../../uploads/" + avatar),
-          userId: foucusInfo[i].userId,
-          username: foucusInfo[i].username,
-          sex: foucusInfo[i].sex,
-          articleNotesNum: userObj_articleNum[foucusInfo[i].userId] || 0,
-          fansNum: userObj_fansNum[foucusInfo[i].userId] || 0,
+          userId: followInfo[i].userId,
+          username: followInfo[i].username,
+          sex: followInfo[i].sex,
+          articleNotesNum: userObj_articleNum[followInfo[i].userId] || 0,
+          fansNum: userObj_fansNum[followInfo[i].userId] || 0,
           footprint: 0,
-          foucsText: loginUser[foucusInfo[i].userId] ? "已关注" : "关注",
+          foucsText: loginUser[followInfo[i].userId] ? "已关注" : "关注",
         };
       }
-      this.foucusTotal = this.allFollowList.length;
+      this.foucusTotal = this.allFocusList.length;
 
-      this.followHandleCurrentChange(this.queryInfo.pagenum);
+      this.followHandleCurrentChange(
+        this.queryInfo.pagenum,
+
+        this.allFocusList
+      );
+    },
+    // 获取粉丝的信息
+    async getFansInfo() {
+      var userResult = this.publicMethod.getUrluserAndUser();
+      const res = await this.$http.get("/api/getFansDetailInfo", {
+        params: {
+          userId: userResult[0],
+        },
+      });
+      console.log(res);
+      var avatar;
+      const {
+        followInfo,
+        followArticleInfo,
+        follow_fansInfo,
+      } = res.data.result;
+
+      // 计算游记数
+      var userObj_articleNum = this.getUserObj_articleNum(followArticleInfo);
+      // 计算粉丝数
+      var userObj_fansNum = this.getUserObj_fansNum(follow_fansInfo);
+
+      // 获取当前登录用户的关注id
+      // 关注按钮显示文本
+      var loginUser = this.getCurrentLoginUser_focusId(userResult);
+
+      // 格式化显示内容
+      for (var i = 0; i < followInfo.length; i++) {
+        avatar = followInfo[i].avatar.split("\\")[2];
+        this.allFansList[i] = {
+          avatar: require("../../../uploads/" + avatar),
+          userId: followInfo[i].userId,
+          username: followInfo[i].username,
+          sex: followInfo[i].sex,
+          articleNotesNum: userObj_articleNum[followInfo[i].userId] || 0,
+          fansNum: userObj_fansNum[followInfo[i].userId] || 0,
+          footprint: 0,
+          foucsText: loginUser[followInfo[i].userId] ? "已关注" : "关注",
+        };
+      }
+      this.foucusTotal = this.allFansList.length;
+
+      this.followHandleCurrentChange(
+        this.queryInfo.pagenum,
+        this.allFansList,
+        "fansPage"
+      );
+      console.log(this.currentFansList);
     },
     // 分页---当前页
-    followHandleCurrentChange(newPage) {
-      this.queryInfo.pagenum = newPage;
-      this.currentFollowList = this.allFollowList.slice(
-        (newPage - 1) * 8,
-        newPage * 8
-      );
+    followHandleCurrentChange(newPage, allFoucsOrFansList, showPage) {
+      if (showPage === "focusPage") {
+        if (allFoucsOrFansList.length === 0) {
+          this.currentFocusList = [];
+        } else {
+          this.queryInfo.pagenum = newPage;
+          this.currentFocusList = allFoucsOrFansList.slice(
+            (newPage - 1) * 8,
+            newPage * 8
+          );
+        }
+      } else if (showPage === "fansPage") {
+        if (allFoucsOrFansList.length === 0) {
+          this.currentFansList = [];
+        } else {
+          this.queryInfo.pagenum = newPage;
+          this.currentFansList = allFoucsOrFansList.slice(
+            (newPage - 1) * 8,
+            newPage * 8
+          );
+        }
+      }
     },
     // 查询关注
     getFollowList() {},

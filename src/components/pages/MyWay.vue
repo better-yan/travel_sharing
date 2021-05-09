@@ -2,44 +2,106 @@
   <el-container>
     <el-header>
       <el-menu
+        style="min-width: 1100px"
         :default-active="activeIndex"
         class="el_menu_main"
         mode="horizontal"
         @select="handleSelect"
+        text-color="#333"
+        active-text-color="#ff9d00"
       >
-        <el-menu-item index="1">处理中心</el-menu-item>
-        <el-submenu index="2">
-          <template slot="title">我的工作台</template>
-          <el-menu-item index="2-1"><a href="/#/setting">设置</a></el-menu-item>
-          <el-menu-item index="2-2"
-            ><a href="/#/createNotes">游记</a></el-menu-item
+        <el-menu-item index="1"
+          ><el-avatar :size="60" shape="square" :src="logoUrl"></el-avatar
+        ></el-menu-item>
+        <el-menu-item index="2"><a href="/#/mayWay">首页</a></el-menu-item>
+        <el-menu-item index="3"
+          ><a :href="'/#/search?' + 'part=all&q='">目的地</a></el-menu-item
+        >
+        <el-menu-item index="4">
+          <a :href="'/#/search?' + 'part=all&q='">旅游攻略</a></el-menu-item
+        >
+        <el-menu-item index="5"><a href="/#/wenda">问答</a></el-menu-item>
+        <el-menu-item index="6">去旅游</el-menu-item>
+        <el-menu-item index="7">麦味首选</el-menu-item>
+        <el-submenu index="8" style="float: right; margin-right: 220px">
+          <template slot="title"
+            ><el-avatar
+              :size="50"
+              :src="loginForm.avatar | filterAvatar"
+            ></el-avatar
+          ></template>
+          <el-menu-item index="8-1"
+            ><a :href="'/#/home?userId=' + loginForm.userId"
+              >我的麦味小屋</a
+            ></el-menu-item
           >
-          <el-menu-item index="2-3">选项3</el-menu-item>
-          <el-submenu index="2-4">
-            <template slot="title">选项4</template>
-            <el-menu-item index="2-4-1">选项1</el-menu-item>
-            <el-menu-item index="2-4-2">选项2</el-menu-item>
-            <el-menu-item index="2-4-3">选项3</el-menu-item>
-          </el-submenu>
+          <el-menu-item index="8-2"
+            ><a href="/#/createNotes">写游记</a></el-menu-item
+          >
+          <el-menu-item index="8-3"
+            ><a href="/#/setting">我的麦味小屋</a></el-menu-item
+          >
         </el-submenu>
-        <el-menu-item index="3" disabled>消息中心</el-menu-item>
-        <el-menu-item index="4">消息中心</el-menu-item>
-        <el-menu-item index="5">消息中心</el-menu-item>
-        <el-menu-item index="6"></el-menu-item>
-        <el-menu-item index="7"></el-menu-item>
-        <el-menu-item index="7"></el-menu-item>
-        <el-menu-item index="7"></el-menu-item>
-        <el-menu-item index="7">消息中心</el-menu-item>
-        <el-menu-item index="7">消息中心</el-menu-item>
-        <el-menu-item index="7">消息中心</el-menu-item>
+        <el-submenu index="9" style="float: right; margin-right: -10px">
+          <template slot="title">消息</template>
+          <el-menu-item index="9-1"
+            ><a href="/#/privateMsg">私信</a></el-menu-item
+          >
+          <el-menu-item index="9-2"
+            ><a href="/#/createNotes">问答消息</a></el-menu-item
+          >
+          <el-menu-item index="9-3"
+            ><a href="/#/setting">回复消息</a></el-menu-item
+          >
+          <el-menu-item index="9-4"
+            ><a href="/#/setting">喜欢与收藏</a></el-menu-item
+          >
+          <el-menu-item index="9-5"
+            ><a href="/#/setting">好友动态</a></el-menu-item
+          >
+        </el-submenu>
       </el-menu>
       <el-carousel height="500px">
-        <el-carousel-item v-for="item in imgList" :key="item">
-          <img class="header_carousel_img" :src="item" alt="图片" />
-        </el-carousel-item> </el-carousel
-    ></el-header>
+        <el-carousel-item v-for="(item, index) in imgList" :key="index">
+          <img class="header_carousel_img" :src="item.img" alt="图片" />
+          <a href="#" class="header_text">
+            <span style="color: #fff">
+              {{ item.date }}
+            </span>
+            <h3 style="color: #fff">{{ item.title }}</h3>
+          </a>
+        </el-carousel-item>
+      </el-carousel>
+      <el-card class="header_search_card" shadow="never">
+        <div style="margin-bottom: 15px; width: 550px">
+          <el-radio style="color: #fff" v-model="headerRadio" label="1"
+            >全部</el-radio
+          >
+          <el-radio style="color: #fff" v-model="headerRadio" label="2"
+            >目的地</el-radio
+          >
+          <el-radio style="color: #fff" v-model="headerRadio" label="3"
+            >游记</el-radio
+          >
+          <el-radio style="color: #fff" v-model="headerRadio" label="4"
+            >问答</el-radio
+          >
+        </div>
+        <el-input
+          placeholder="请输入内容"
+          v-model="headerSearchInput"
+          class="input-with-select"
+        >
+          <el-button
+            slot="append"
+            @click="onMyWaySearch"
+            icon="el-icon-search"
+          ></el-button>
+        </el-input>
+      </el-card>
+    </el-header>
     <el-container class="child_container">
-      <el-aside width="30%">
+      <el-aside width="30%" style="min-width: 220px">
         <div>
           <el-card shadow="hover">
             <div class="travel_title">
@@ -47,20 +109,16 @@
               <a href="#" class="column_main">专栏首页</a>
             </div>
             <div>
-              <!-- <el-carousel height="150px">
-                <el-carousel-item
-                  v-for="(item, index) in mainContent"
-                  :key="index"
-                >
-                  <img class="aside_carousel_img" :src="item.img" alt="图片" />
-                </el-carousel-item>
-              </el-carousel> -->
               <el-carousel :interval="4000" type="card" height="150px">
                 <el-carousel-item
                   v-for="(item, index) in mainContent"
                   :key="index"
                 >
-                  <img class="aside_carousel_img" :src="item.img" alt="图片" />
+                  <img
+                    class="aside_carousel_img"
+                    :src="item.file | filterAvatar"
+                    alt="图片"
+                  />
                 </el-carousel-item>
               </el-carousel>
             </div>
@@ -115,7 +173,7 @@
           </el-card>
         </div>
       </el-aside>
-      <el-main>
+      <el-main style="min-width: 680px">
         <div v-for="(item, index) in currentShowContent" :key="index">
           <el-row>
             <el-col
@@ -124,36 +182,28 @@
                   <el-col :span="9">
                     <!-- <img :src="item.img" alt="图片" /> -->
                     <el-image
-                      style="width: 100%; height: 100%"
-                      :src="item.img"
+                      style="width: 220px; height: 150px"
+                      :src="item.file | filterAvatar"
                       fit="cover"
                     ></el-image>
                   </el-col>
                   <el-col :span="15">
                     <div style="height: 40px">
-                      <a
-                        href="#"
-                        id="articleTitle"
-                        v-on:click="
-                          onDetailArticle(item.articleId, 'articleTitle')
-                        "
-                        >{{ item.title }}</a
+                      <el-link
+                        :href="'/#/article?articleId=' + item.articleId"
+                        >{{ item.title }}</el-link
                       >
                     </div>
                     <div style="height: 80px">
                       <a
                         class="mw_a_articleContent"
-                        id="articleContent"
-                        v-on:click="
-                          onDetailArticle(item.articleId, 'articleContent')
-                        "
-                        href="#"
-                        v-text="item.text"
+                        :href="'/#/article?articleId=' + item.articleId"
+                        v-html="item.text"
                         >{{ item.text }}</a
                       >
                     </div>
                     <el-row :gutter="0">
-                      <el-col :span="4"
+                      <el-col :span="6"
                         ><i class="el-icon-location"></i
                         ><a>{{ item.city }}</a></el-col
                       >
@@ -163,7 +213,7 @@
                             ><el-avatar
                               class="author_avatar"
                               size="small"
-                              :src="item.img"
+                              :src="item.avatar | filterAvatar"
                             ></el-avatar
                           ></a>
                           <a
@@ -173,11 +223,13 @@
                           >
                         </div>
                       </el-col>
-                      <el-col :span="10"
-                        ><i class="el-icon-view"></i><span>张三</span></el-col
+                      <el-col :span="6"
+                        ><i class="el-icon-view"></i
+                        ><span>{{ item.a_click }}</span></el-col
                       >
                       <el-col :span="4"
-                        ><span>张三</span><a href="#" class="give_a_like"></a
+                        ><span>{{ item.a_like }}</span
+                        ><a href="#" class="give_a_like"></a
                       ></el-col> </el-row
                   ></el-col>
                 </el-row> </el-card
@@ -209,8 +261,17 @@ export default {
   },
   data() {
     return {
+      // 登录用户信息
+      loginForm: {
+        userId: "",
+        username: "",
+        avatar: "",
+      },
       // 导航栏初始定位
       activeIndex: "1",
+      // 头部的搜索框
+      headerRadio: "1",
+      headerSearchInput: "",
       //   a: "/assets/image/1.jpg",
       // 主轮播图初始化数组
       imgList: [],
@@ -220,6 +281,7 @@ export default {
       currentShowContent: [],
       // 导入侧边栏图片
       url: require("../../public/image/1.jpg"),
+      logoUrl: require("../../public/image/LOGO.png"),
       // 分页查询条件
       queryInfo: {
         query: "",
@@ -230,12 +292,33 @@ export default {
     };
   },
   created() {
+    this.getLoginUserInfo();
     this.getImageList();
     this.getMainImgList();
   },
   mounted() {},
   updated() {},
   methods: {
+    async getLoginUserInfo() {
+      var userId = window.sessionStorage.getItem("userId");
+      const res = await this.$http.get("/api/setting", {
+        params: {
+          userId,
+        },
+      });
+      console.log(res);
+      if (res.status !== 200) {
+        return this.$message.error("查询失败");
+      } else {
+        if (!res.data.state) {
+          console.log(this.loginForm);
+
+          for (var item in this.loginForm) {
+            this.loginForm[item] = res.data[item];
+          }
+        }
+      }
+    },
     // 分页---当前页
     handleCurrentChange(newPage) {
       this.queryInfo.pagenum = newPage;
@@ -246,7 +329,11 @@ export default {
     },
     getImageList() {
       for (var i = 1; i <= 4; i++) {
-        this.imgList.push(require("../../public/image/" + i + ".jpg"));
+        this.imgList.push({
+          img: require("../../public/image/" + i + ".jpg"),
+          date: 10 + i + "/Apr.2021",
+          title: "撷一肩春色，览万种风光",
+        });
       }
       // console.log(this.imgList);
     },
@@ -259,7 +346,8 @@ export default {
         let reg = /<\/?.+?\/?>/g;
         this.mainContent[i] = {
           // img: require(url),
-          img: require("../../public/image/main" + i + ".jpg"),
+          file: this.getMainContent[i].file,
+          avatar: this.getMainContent[i].avatar,
           // text: i,
           title: this.getMainContent[i].title,
           text: this.getMainContent[i].text.replace(reg, ""),
@@ -267,6 +355,8 @@ export default {
           username: this.getMainContent[i].username,
           city: this.getMainContent[i].city,
           articleId: this.getMainContent[i].articleId,
+          a_click: this.getMainContent[i].a_click,
+          a_like: this.getMainContent[i].a_like,
         };
         // console.log(this.mainContent);
       }
@@ -275,7 +365,7 @@ export default {
     },
     onDetailArticle(userId, labelId) {
       var articleContent = document.getElementById(labelId);
-      articleContent.setAttribute("href", `/#/jome?userId=${userId}`);
+      articleContent.setAttribute("href", `/#/article?userId=${userId}`);
     },
     handleSelect() {},
     handleOpen(key, keyPath) {
@@ -283,6 +373,25 @@ export default {
     },
     handleClose(key, keyPath) {
       // console.log(key, keyPath);
+    },
+    onMyWaySearch() {
+      console.log(this.headerRadio, this.headerSearchInput);
+      switch (this.headerRadio) {
+        case "1":
+          this.$router.push("/search?part=all&q=" + this.headerSearchInput);
+          break;
+        case "2":
+          this.$router.push(
+            "/search?part=destination&q=" + this.headerSearchInput
+          );
+          break;
+        case "3":
+          this.$router.push("/search?part=note&q=" + this.headerSearchInput);
+          break;
+        case "4":
+          this.$router.push("/search?part=qa&q=" + this.headerSearchInput);
+          break;
+      }
     },
   },
 };
@@ -401,5 +510,21 @@ body > .el-container {
 .aside_carousel_img {
   width: 100%;
   height: 100%;
+}
+
+.header_search_card {
+  position: absolute;
+  transform: translateX(-50%) translateY(0%);
+  top: 50%;
+  left: 50%;
+  z-index: 200;
+  background-color: rgba(0, 0, 0, 0.6);
+  border-radius: 4px;
+}
+.header_text {
+  position: absolute;
+  top: 15%;
+  left: 15%;
+  z-index: 200;
 }
 </style>
